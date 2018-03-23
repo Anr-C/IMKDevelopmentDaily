@@ -6,6 +6,9 @@
 [shadowsocks-qt5]: https://github.com/imknown/IMKDevelopmentDaily/blob/master/2017/06/03_shadowsocks%20%E9%A1%B9%E7%9B%AE%20%E5%AE%A2%E6%88%B7%E7%AB%AF.md
 
 # 第二步: 生成 PAC
+**2018-01-24 Update**:  
+官方已发布 `2.x` 版本.
+
 1. 安装 [`genpac`][genpac]
 
 [genpac]: https://github.com/JinnLynn/GenPAC
@@ -14,15 +17,15 @@
    pip install genpac
    ```
 
-2. 生成 PAC 文件 (官网文档已过时, 自行 `--help`)
+2. 生成 PAC 文件 ~~(官网文档已过时, 自行 `--help`)~~
   - SOCKS5 协议
 ``` bash
-genpac --gfwlist-proxy "SOCKS5 127.0.0.1:1080" --proxy "SOCKS5 127.0.0.1:1080" --output "gfwlist-socks5.pac"
+genpac --gfwlist-proxy "SOCKS5 127.0.0.1:1080" --pac-proxy "SOCKS5 127.0.0.1:1080" --output "gfwlist-socks5.pac"
 ```
 
   - HTTP(S) 协议
 ``` bash
-genpac --gfwlist-proxy "PROXY 127.0.0.1:1081" --proxy "PROXY 127.0.0.1:1081" --output "gfwlist-http.pac"
+genpac --gfwlist-proxy "PROXY 127.0.0.1:1081" --pac-proxy "PROXY 127.0.0.1:1081" --output "gfwlist-http.pac"
 ```
 
 ### Update 2017-06-08
@@ -57,8 +60,87 @@ source /etc/environment
 经常更换 `ss` 不可避免. 注意修改 `pac` 中 `代理协议` 和 `ip 地址:端口` 等.  
 一般在 `pac` 的开头 都可以找到.
 
-# 关于全局代理
-1. 浏览器的话, 可以装 `SwitchyOmega` 等插件
-1. Proxifier
-1. Privoxy
-1. `终端` 的话 看官方 [WIKI](https://github.com/shadowsocks/shadowsocks/wiki)
+----
+
+# 终端临时
+- Windows
+``` cmd
+:: http(s)
+set http_proxy='http://127.0.0.1:1080'
+set https_proxy='https://127.0.0.1:1080'
+
+:: socks5
+set http_proxy='socks5://127.0.0.1:1080'
+set https_proxy='socks5://127.0.0.1:1080'
+```
+
+- Linux
+``` bash
+# http(s)
+export http_proxy='http://127.0.0.1:1080'
+export https_proxy='https://127.0.0.1:1080'
+
+# socks5
+export http_proxy='socks5://127.0.0.1:1080'
+export https_proxy='socks5://127.0.0.1:1080'
+```
+
+----
+
+# 全局代理
+### 浏览器的话, 可以装 `SwitchyOmega` 等插件
+
+### ~~Proxifier~~
+
+### Privoxy
+1. 安装
+``` bash
+sudo apt install privoxy
+```
+
+2. 配置
+``` config
+#  4.1. listen-address
+listen-address  127.0.0.1:8118
+listen-address  [::1]:8118
+
+#  5.2. forward-socks4, forward-socks4a, forward-socks5 and forward-socks5t
+forward-socks5 / 127.0.0.1:1080 .
+```
+
+3. 关于服务: 启动/停止/状态...
+``` bash
+sudo service privoxy start
+sudo service privoxy stop
+sudo service privoxy status
+sudo service privoxy restart
+```
+
+4. 使用
+``` bash
+# 也可以配置到环境变量, 参考:
+# https://github.com/imknown/IMKDevelopmentDaily/blob/master/2016/10/14_Ubuntu 16 配置 ADB 环境变量.md
+export http_proxy=http://127.0.0.1:8118
+export https_proxy=http://127.0.0.1:8118
+```
+
+5. 测试
+``` bash
+curl google.com
+```
+
+返回如下内容 即表示成功:
+``` html
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="http://www.google.com/">here</A>.
+</BODY></HTML>
+```
+
+### polipo
+
+### proxychains
+
+### https://github.com/shadowsocks/shadowsocks/wiki

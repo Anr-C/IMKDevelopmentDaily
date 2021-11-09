@@ -4,12 +4,15 @@ https://github.com/imknown/IMKDevelopmentDaily/blob/master/2017/06/04_Xfce%20配
 # git
 ``` bash
 # https(s)
-git config --global http.proxy http://127.0.0.1:1080
-git config --global https.proxy https://127.0.0.1:1080
+git config --global http.proxy http://127.0.0.1:1081
+git config --global https.proxy https://127.0.0.1:1081
 
 # socks
 git config --global http.proxy 'socks5://127.0.0.1:1080'
 git config --global https.proxy 'socks5://127.0.0.1:1080'
+
+# 特定网站
+git config --global http.https://github.com socks5://127.0.0.1:1080
 ```
 
 - 屏蔽 SSL 认证
@@ -21,6 +24,9 @@ git config --global http.sslverify false
 ``` bash
 git config --global --unset http.proxy
 git config --global --unset https.proxy
+
+# 取消特定网站
+git config --global --unset http.https://github.com
 ```
 
 # 参考

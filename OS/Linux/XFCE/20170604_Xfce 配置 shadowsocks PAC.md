@@ -1,0 +1,209 @@
+# 第一步: shadowsocks-qt5
+1. 安装 [`shadowsocks-qt5`][shadowsocks-qt5]
+1. 配置 `shadowsocks-qt5`, 如 `'SOCKS5 → 127.0.0.1:1080'`, `'HTTP(S) → 127.0.0.1:1081'`
+1. 连接服务器
+
+[shadowsocks-qt5]: https://github.com/imknown/IMKDevelopmentDaily/blob/master/2017/06/03_shadowsocks%20%E9%A1%B9%E7%9B%AE%20%E5%AE%A2%E6%88%B7%E7%AB%AF.md
+
+# 第二步: 生成 PAC
+**2018-01-24 Update**:  
+官方已发布 `2.x` 版本.
+
+1. 安装 [`genpac`][genpac]
+
+[genpac]: https://github.com/JinnLynn/GenPAC
+
+``` bash
+pip install -U genpac
+```
+
+2. 生成 PAC 文件 ~~(官网文档已过时, 自行 `--help`)~~
+  - SOCKS5 协议
+``` bash
+genpac \
+--gfwlist-proxy "SOCKS5 127.0.0.1:1080" \
+--pac-proxy "SOCKS5 127.0.0.1:1080" \
+--user-rule-from "user-rules.txt" \
+--output "gfwlist-socks5.pac"
+```
+
+  - HTTP(S) 协议
+``` bash
+genpac \
+--gfwlist-proxy "PROXY 127.0.0.1:1081" \
+--pac-proxy "PROXY 127.0.0.1:1081" \
+--user-rule-from "user-rules.txt" \
+--output "gfwlist-http.pac"
+```
+
+### Update 2017-06-08
+关于 白名单:
+- https://github.com/breakwa11/gfw_whitelist
+- https://github.com/R0uter/gfw_domain_whitelist
+
+# 第三步: 导入系统
+### Gnome3: 自动
+选择 `设置` 中的 `网络代理`, 选择 "自动",  
+填入 `file:///Path/to/your/gfwlist.pac`, 应用即可.
+
+### XFCE4: 手动
+**尽量不要和 Gnome3 同时使用, 有可能会导致 `网易云音乐` 必须使用 代理 才能听歌!!**
+> https://superuser.com/questions/357688/how-to-configure-proxy-settings-on-linux-xfce
+> https://askubuntu.com/questions/150210/how-do-i-set-system-wide-proxy-servers-in-xubuntu-lubuntu-or-ubuntu-studio
+> http://manpages.ubuntu.com/manpages/bionic/man1/chromium-browser.1.html#environment
+
+``` bash
+sudo mousepad /etc/environment
+```
+
+在 文件最后面 加入:
+``` properties
+auto_proxy=file:///home/imknown/Me/OS/GFW/black/gfwlist-socks5.pac
+AUTO_PROXY=file:///home/imknown/Me/OS/GFW/black/gfwlist-socks5.pac
+```
+
+执行:
+``` bash
+source /etc/environment
+```
+
+保存, 注销 后 生效...
+
+# 第四步 (可选, 用于后期维护): 编辑 PAC
+经常更换 `ss` 不可避免. 注意修改 `pac` 中 `代理协议` 和 `ip 地址:端口` 等.  
+一般在 `pac` 的开头 都可以找到.
+
+----
+
+# 终端临时
+- Windows
+``` cmd
+:: http(s)
+set http_proxy='http://127.0.0.1:1081'
+set https_proxy='https://127.0.0.1:1081'
+
+:: socks5
+set http_proxy='socks5://127.0.0.1:1080'
+set https_proxy='socks5://127.0.0.1:1080'
+```
+
+- Linux
+``` bash
+# http(s)
+export http_proxy=127.0.0.1:1081
+export https_proxy=127.0.0.1:1081
+
+# socks5
+export http_proxy='socks5://127.0.0.1:1080'
+export https_proxy='socks5://127.0.0.1:1080'
+```
+
+----
+
+# 全局代理
+### 1. 浏览器的话, 可以装 `SwitchyOmega` 等插件 或者 [参数][参数]等...
+
+[参数]: http://manpages.ubuntu.com/manpages/bionic/man1/chromium-browser.1.html#environment
+
+### 2. Proxifier
+
+### 3. [Privoxy](https://www.privoxy.org/)
+1. 安装
+``` bash
+sudo apt install privoxy
+```
+
+2. 配置
+``` bash
+sudo gedit /etc/privoxy/config
+```
+
+``` config
+#  4.1. listen-address
+listen-address  127.0.0.1:8118
+listen-address  [::1]:8118
+
+forward-socks5 / 127.0.0.1:1080 .
+forward / 127.0.0.1:1081 .
+```
+
+3. 关于服务: 启动/停止/状态...
+``` bash
+sudo service privoxy start
+sudo service privoxy stop
+sudo service privoxy status
+sudo service privoxy restart
+```
+
+4. 使用
+``` bash
+# 也可以配置到环境变量, 参考:
+# https://github.com/imknown/IMKDevelopmentDaily/blob/master/2016/10/14_Ubuntu 16 配置 ADB 环境变量.md
+export http_proxy=http://127.0.0.1:8118
+export https_proxy=http://127.0.0.1:8118
+```
+
+5. 测试
+``` bash
+curl google.com
+```
+
+返回如下内容 即表示成功:
+``` html
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="http://www.google.com/">here</A>.
+</BODY></HTML>
+```
+
+### 4. polipo
+
+### 5. [proxychains-ng](https://github.com/rofl0r/proxychains-ng)
+
+### 6. [proxychains4](https://github.com/haad/proxychains) 
+1. 安装
+``` bash
+sudo apt install proxychains4
+```
+
+2. 配置
+``` bash
+sudo gedit /etc/proxychains4.conf
+```
+
+``` config
+[ProxyList]
+# add proxy here ...
+# meanwile
+# defaults set to "tor"
+# socks4 	127.0.0.1 9050
+http  127.0.0.1   1081
+```
+
+3. 使用
+``` bash
+proxychains4 xxx
+```
+
+4. 测试
+``` bash
+proxychains4 curl google.com
+```
+
+返回如下内容 即表示成功:
+``` html
+[proxychains] config file found: /etc/proxychains4.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.12
+[proxychains] Strict chain  ...  127.0.0.1:1081  ...  google.com:80  ...  OK
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="http://www.google.com/">here</A>.
+</BODY></HTML>
+```
+
+### 7. https://github.com/shadowsocks/shadowsocks/wiki
